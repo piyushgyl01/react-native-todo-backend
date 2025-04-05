@@ -1,4 +1,4 @@
-const Task = require('../models/Task');
+const Task = require("../models/Task");
 
 // @desc    Get all tasks for a user
 // @route   GET /api/tasks
@@ -6,15 +6,15 @@ const Task = require('../models/Task');
 exports.getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.user.id });
-    
+
     res.json({
       success: true,
       count: tasks.length,
-      data: tasks
+      data: tasks,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -23,32 +23,25 @@ exports.getTasks = async (req, res) => {
 // @access  Private
 exports.createTask = async (req, res) => {
   try {
-    const { title, description, priority, deadline, category } = req.body;
-    
+    const { title, description, priority, category } = req.body;
+
     const newTask = new Task({
       title,
       description,
-      priority: priority || 'medium',
-      deadline,
+      priority: priority || "medium",
       category,
-      user: req.user.id
+      user: req.user.id,
     });
-    
+
     const task = await newTask.save();
-    
+
     res.status(201).json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     console.error(error);
-    
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      return res.status(400).json({ message: messages });
-    }
-    
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -58,23 +51,25 @@ exports.createTask = async (req, res) => {
 exports.getTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
-    
+
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: "Task not found" });
     }
-    
-    // Make sure user owns the task
+
+    // Check if user owns the task
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to access this task' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to access this task" });
     }
-    
+
     res.json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -84,28 +79,30 @@ exports.getTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     let task = await Task.findById(req.params.id);
-    
+
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: "Task not found" });
     }
-    
-    // Make sure user owns the task
+
+    // Check if user owns the task
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to update this task' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this task" });
     }
-    
+
     task = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
-    
+
     res.json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -115,24 +112,26 @@ exports.updateTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
-    
+
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: "Task not found" });
     }
-    
-    // Make sure user owns the task
+
+    // Check if user owns the task
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to delete this task' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this task" });
     }
-    
+
     await Task.findByIdAndDelete(req.params.id);
-    
+
     res.json({
       success: true,
-      data: {}
+      data: {},
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
